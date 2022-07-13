@@ -9,7 +9,12 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^2.6.11"
+    "element-ui": "^2.15.9",
+    "fullcalendar": "^3.10.2",
+    "jquery": "^3.6.0",
+    "moment": "^2.29.4",
+    "vue": "^2.6.11",
+    "vue-full-calendar": "^2.8.1-0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.13",
