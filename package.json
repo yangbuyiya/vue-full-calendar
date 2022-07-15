@@ -14,7 +14,7 @@
     "@fullcalendar/timegrid": "^5.11.0",
     "@fullcalendar/vue": "^5.11.0",
     "core-js": "^3.6.5",
-    "element-ui": "^2.15.9",
+    "element-ui": "2.13.2",
     "fullcalendar": "^3.10.2",
     "jquery": "^3.6.0",
     "moment": "^2.29.4",
