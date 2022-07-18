@@ -204,6 +204,7 @@ export default {
     },
     // 选中白色区域的时候 (新增)
     handleDateSelect(time) {
+      // 点击弹出用户输入
       this.reset()
       this.updateForm.datePicker = this.reloadDateTime(time.start, new Date(time.end) - 1)
       setTimeout(() => {
@@ -262,7 +263,7 @@ export default {
           let time = this.reloadDateTime(event.start, event.end)
           this.updateForm = event
           // 会议时间
-          this.updateForm.datePicker = time
+          this.updateForm.datePicker = time;
         } else if (this.deleteCount === 2) {
           this.$confirm('是否继续删除【' + event.title + '】事件?', '提示', {
             confirmButtonText: '确定',
@@ -315,20 +316,22 @@ export default {
       //   }
       // })
 
+
       // 模拟提交
-      let oldData = {
-        id: this.updateForm.id,
-        title: this.updateForm.title,
-        text: this.updateForm.text,
-        userList: this.updateForm.userList,
-        backgroundColor: this.updateForm.backgroundColor,
-        start: this.datePicker[0],
-        end: this.datePicker[1],
-      };
+      this.updateForm.start = this.updateForm.datePicker[0];
+      this.updateForm.end = this.updateForm.datePicker[1]
 
-      let index = this.calendarOptions.events.findIndex(e => e.id === oldData.id);
-      this.calendarOptions.events.splice(index, 1, oldData)
-
+      if ([null, undefined, ''].includes(this.updateForm.id)) {
+        // 模拟新增
+        this.updateForm.id = this.count ++;
+        // 新增数据
+        console.log(this.updateForm);
+        this.calendarOptions.events.push(this.updateForm);
+      } else {
+        // 更新
+        let index = this.calendarOptions.events.findIndex(e => e.id === this.updateForm.id);
+        this.calendarOptions.events.splice(index, 1, this.updateForm)
+      }
       console.log("提交：", this.calendarOptions.events);
       this.dialogVisible = false;
 
