@@ -1,5 +1,17 @@
 # vue-demo
 
+
+
+# 操作流程
+### 单机日程事项 -》 新增 or 更新
+### 双击日程事项 -》 删除
+
+
+# 演示
+![](img/img.png)
+![](img/img_1.png)
+
+
 # 添加依赖 packge.json  dependencies
 
     "@fullcalendar/core": "^5.11.0",
