@@ -9,7 +9,44 @@
       <div class="tabs" style="width: 100%">
         <FullCalendar ref="fullCalendar"
                       :options="calendarOptions" class="demo-app-calendar"
-        />
+        >
+          <!--          格子里面的内容-->
+          <template v-slot:eventContent="arg">
+            <div
+                style="font-size: 13px;font-weight: bold;width: 100%;height: 100%;line-height: 15px;overflow:hidden !important;"
+            >
+              <el-popover
+                  :placement="placementPop"
+                  :title="arg.event.title"
+                  width="430"
+                  :visible-arrow="false"
+                  trigger="hover"
+              >
+                <p style="display: inline-block;font-size: 13px;font-weight: bold;">
+                  会议内容： {{ arg.event.extendedProps.text }}
+                </p>
+                <p style="display: inline-block;font-size: 13px;font-weight: bold;">
+                  会议时间：{{ reloadDateTime(arg.event.start, new Date(arg.event.end) - 1)[0] }} -
+                  {{ reloadDateTime(arg.event.start, new Date(arg.event.end) - 1)[1] }}
+                </p>
+
+
+                <!--页面显示的-->
+                <div slot="reference" style="width: 100%;height: 100%;display: block;z-index: 1000">
+                  <span>
+                    <span
+                        :style="{display:'inline-block',backgroundColor: arg.event.backgroundColor||'#3788d8',width: '7px',height: '7px',borderRadius: '50%'}"
+                    ></span>
+                    {{ arg.timeText }}
+                  </span>
+
+                  <span style="display: inline-block;font-size: 13px;font-weight: bold;">{{ arg.event.title }}</span>
+
+                </div>
+              </el-popover>
+            </div>
+          </template>
+        </FullCalendar>
       </div>
       <!--  删除 更新  -->
       <el-dialog title="日程" v-if="dialogVisible" :visible.sync="dialogVisible" width="80%" :before-close="handleClose">
@@ -83,7 +120,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import zhCnLocale from '@fullcalendar/core/locales/zh-cn'
-import tippy from 'tippy.js'
+// import tippy from 'tippy.js'
 import moment from 'moment'
 // import {deleteById, getListByDateTime, saveOrUpdate} from '@/api/oa/workCalendarItems'
 
@@ -124,7 +161,7 @@ export default {
         dayMaxEvents: true,
         weekends: true, // 是否显示一周七天
         select: this.handleDateSelect, // 点击空白区域出触发
-        eventMouseEnter: this.handleEventMouseEnter, // 用户将鼠标悬停在事件上时触发
+        // eventMouseEnter: this.handleEventMouseEnter, // 用户将鼠标悬停在事件上时触发
         datesSet: this.handleEvents,
         // dateClick: this.handleDateClick,//日期方格点击事件
         eventClick: this.eventClick, //日程点击事件
@@ -337,28 +374,28 @@ export default {
 
     },
     // 用户将鼠标悬停在事件上时触发,这里数据做了类型判断，不同的类型数据页面悬浮框显示不用的内容
-    handleEventMouseEnter(info) {
-      let eve = this.calendarOptions.events.find(e => e.id == info.event.id)
-      // 会议内容处理
-      let newVar = eve.text  // && eve.text.length > 10 ? eve.text.substr(0, 10) + '...' : eve.text
-      // 时间处理
-      let dateTime = this.reloadDateTime(eve.start, new Date(eve.end) - 1)
-      tippy(info.el, {
-        content: `
-         <div style="width: 430px;z-index:9999;background: #fff !important;line-height: 1.6;border-radius:4px;border:1px solid #ebeef5;padding:12px;color:#606266;line-height:1.4;text-align:justify;font-size:14px;word-break:break-all;overflow: hidden">
-        <div style="white-space:normal;overflow:auto;table-layout:fixed;word-break:break-all;height:auto;display:inline-block;width: 100%;">
-        <span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
-        会议名称：${eve.title}</div>
-        <p style="width: 100%;"><span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
-        会议内容：${newVar}</p>
-        <div style="width: 100%;"><span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
-        会议时间：${dateTime[0]} - ${dateTime[1]}</div>
-      </div>
-        `,
-        allowHTML: true, //是否允许html文本
-        zIndex: 9999
-      })
-    },
+    // handleEventMouseEnter(info) {
+    //   let eve = this.calendarOptions.events.find(e => e.id == info.event.id)
+    //   // 会议内容处理
+    //   let newVar = eve.text  // && eve.text.length > 10 ? eve.text.substr(0, 10) + '...' : eve.text
+    //   // 时间处理
+    //   let dateTime = this.reloadDateTime(eve.start, new Date(eve.end) - 1)
+    //   tippy(info.el, {
+    //     content: `
+    //      <div style="width: 430px;z-index:9999;background: #fff !important;line-height: 1.6;border-radius:4px;border:1px solid #ebeef5;padding:12px;color:#606266;line-height:1.4;text-align:justify;font-size:14px;word-break:break-all;overflow: hidden">
+    //     <div style="white-space:normal;overflow:auto;table-layout:fixed;word-break:break-all;height:auto;display:inline-block;width: 100%;">
+    //     <span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
+    //     会议名称：${eve.title}</div>
+    //     <p style="width: 100%;"><span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
+    //     会议内容：${newVar}</p>
+    //     <div style="width: 100%;"><span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
+    //     会议时间：${dateTime[0]} - ${dateTime[1]}</div>
+    //   </div>
+    //     `,
+    //     allowHTML: true, //是否允许html文本
+    //     zIndex: 9999
+    //   })
+    // },
     // 监听分页
     handleEvents(time) {
       let start = time.start
