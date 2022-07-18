@@ -131,6 +131,8 @@ export default {
   },
   data() {
     return {
+      // 文字弹出层样式 bottom-start top-start left-start right-start
+      placementPop: 'bottom-start',
       calendarOptions: {
         plugins: [
           // 加载插件，V5采用插件模块方式加入
