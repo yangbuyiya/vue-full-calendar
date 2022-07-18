@@ -1,24 +1,25 @@
 <template>
-  <div>
+  <div class="app-container">
     <!-- 日程表 -->
-    <div class="top" style="background: #fff; padding: 8px 6px;width: 1200px;margin: 0 auto;">
+    <div class="top" style="background: #fff; padding: 8px 6px;margin: 0 auto;width: 80%;">
       <!--    <div class="modelBox">-->
       <!--      <span class="radis"></span>-->
       <!--      <span style="color: black; font-size: 16px; font-weight: bold">会议记录</span>-->
       <!--    </div>-->
       <div class="tabs" style="width: 100%">
         <FullCalendar ref="fullCalendar"
-                      :all-day-slot="false"
-                      :options="calendarOptions" class="demo-app-calendar"/>
+                      :options="calendarOptions" class="demo-app-calendar"
+        />
       </div>
       <!--  删除 更新  -->
-      <el-dialog title="提示" v-if="dialogVisible" :visible.sync="dialogVisible" width="80%" :before-close="handleClose">
+      <el-dialog title="日程" v-if="dialogVisible" :visible.sync="dialogVisible" width="80%" :before-close="handleClose">
         <div>
           <el-form class="info" :rules="rules" ref="updateForm" label-position="left" :model="updateForm"
-                   label-width="80px">
+                   label-width="120px"
+          >
             <el-row>
               <el-col :span="10">
-                <el-form-item label="会议标题:">
+                <el-form-item label="活动标题:" prop="title">
                   <el-input v-model="updateForm.title" style="display: inline-block"></el-input>
                 </el-form-item>
               </el-col>
@@ -28,29 +29,37 @@
             </el-row>
             <el-row>
               <el-col :span="24">
-                <el-form-item label="会议内容:">
+                <el-form-item label="活动内容:" prop="text">
                   <el-input type="textarea" size="small" v-model="updateForm.text" :rows="5"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :span="24">
               <el-col :span="24">
-                <el-form-item label="参加人员:" style="width: 100%;text-align: left;">
+                <el-form-item label="参加人员:" prop="userList" style="width: 100%;text-align: left;">
                   <el-input type="textarea" size="small" v-model="updateForm.userList" :rows="5"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :span="24">
               <el-col :span="24">
-                <el-form-item label="会议时间:" prop="start" style="width: 100%;text-align: left;">
+                <el-form-item label="会议室:" prop="meetingRoom" style="width: 100%;text-align: left;">
+                  <el-input type="textarea" size="small" v-model="updateForm.meetingRoom" :rows="5"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row :span="24">
+              <el-col :span="24">
+                <el-form-item label="活动时间:" prop="datePicker" style="width: 100%;text-align: left;">
                   <el-date-picker
-                      v-model="datePicker"
+                      v-model="updateForm.datePicker"
                       type="datetimerange"
                       value-format="yyyy-MM-dd HH:mm:ss"
                       range-separator="至"
                       start-placeholder="开始日期"
                       :default-time="['00:00:00', '23:59:59']"
-                      end-placeholder="结束日期">
+                      end-placeholder="结束日期"
+                  >
                   </el-date-picker>
                 </el-form-item>
               </el-col>
@@ -60,7 +69,7 @@
           </el-form>
         </div>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button @click="dialogVisible = false;getList()">取 消</el-button>
           <el-button type="primary" @click="submit()">确 定</el-button>
         </div>
       </el-dialog>
@@ -74,12 +83,12 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import zhCnLocale from '@fullcalendar/core/locales/zh-cn'
-import tippy from "tippy.js";
-import moment from "moment";
-
+import tippy from 'tippy.js'
+import moment from 'moment'
+// import {deleteById, getListByDateTime, saveOrUpdate} from '@/api/oa/workCalendarItems'
 
 export default {
-  name: "demo2",
+  name: 'fullCalendar',
   components: {
     FullCalendar
   },
@@ -90,17 +99,16 @@ export default {
           // 加载插件，V5采用插件模块方式加入
           dayGridPlugin,
           timeGridPlugin,
-          interactionPlugin, // needed for dateClick
+          interactionPlugin // needed for dateClick
         ],
         height: 800, //日历高度
-        width: "100%",
         headerToolbar: {
           // 头部toolba
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        defaultView: "month", //显示默认视图
+        defaultView: 'month', //显示默认视图
         weekMode: 'liquid', //在月视图里显示周的模式，因为每月周数可能不同，所以月视图高度不一定。fixed：固定显示6周高，日历高度保持不变liquid：不固定周数，高度随周数变化variable：不固定周数，但高度固定
         weekNumbers: true, //是否在视图左边显示这是第多少周，默认false
         eventLimit: 5, // 限制显示
@@ -120,14 +128,14 @@ export default {
         datesSet: this.handleEvents,
         // dateClick: this.handleDateClick,//日期方格点击事件
         eventClick: this.eventClick, //日程点击事件
-        eventDragStop: this.eventDropStart, // 拖拽后的回调
-        eventDrop: this.eventDropEnd,
+        eventDragStop: this.eventDropStart, // 事件拖动停止 拖拽触发
+        eventDrop: this.eventDropEnd, // 拖拽完毕给的参数是最新的
         locale: zhCnLocale,
         timeFormat: 'HH:mm',
         // timeZone: 'Asia/Shanghai',
         // nextDayThreshold: "00:00:00",// 关闭维度
         // 日历数据
-        events: [],
+        events: []
         // datesSet: this.handleDateSet,
         /* you can update a remote database when these fire:
         eventAdd:
@@ -139,12 +147,24 @@ export default {
       count: 1,
       // 删除 更新
       dialogVisible: false,
+      // 暂存新增数据
+      temporaryStorage: [],
       updateForm: {
+        id: null,
+        // 标题
+        title: '',
+        // 紧急颜色标记
+        backgroundColor: '',
+        // 会议内容
+        text: '',
         // 参加会议人员
-        userList: [{
-          value: '选项4',
-          label: '龙须面'
-        }],
+        userList: '',
+        // 会议室
+        meetingRoom: '',
+        // 时间
+        datePicker: [],
+        start: '',
+        end: ''
       },
       // 会议时间
       datePicker: [],
@@ -152,32 +172,256 @@ export default {
       deleteCount: 0,
       // 记录分页触发
       paginationDateTime: [],
-      // 参加人员数据
-      options: [{
-        value: '选项1',
-        label: '黄金糕'
-      }, {
-        value: '选项2',
-        label: '双皮奶'
-      }, {
-        value: '选项3',
-        label: '蚵仔煎'
-      }, {
-        value: '选项4',
-        label: '龙须面'
-      }, {
-        value: '选项5',
-        label: '北京烤鸭'
-      }],
+      //
+      events: [],
       // 校验表单
       rules: {
         datePicker: [
           {required: true, message: '请选择会议日期', trigger: 'change'}
         ],
+        'title': [
+          {required: true, message: '请输入标题', trigger: 'blur'}
+        ],
+        'text': [
+          {required: true, message: '请输入内容', trigger: 'blur'}
+        ],
+        'userList': [
+          {required: true, message: '请输入参加人员', trigger: 'blur'}
+        ],
+        'meetingRoom': [
+          {required: true, message: '请输入会议室', trigger: 'blur'}
+        ]
       }
     }
   },
   methods: {
+    // 根据日期获取时间集合
+    getList() {
+      // 请求 开始时间 - 结束时间
+      // getListByDateTime(this.paginationDateTime[0], this.paginationDateTime[1]).then(res => {
+      //   this.calendarOptions.events = res.data
+      // })
+    },
+    // 选中白色区域的时候 (新增)
+    handleDateSelect(time) {
+      this.reset()
+      this.updateForm.datePicker = this.reloadDateTime(time.start, new Date(time.end) - 1)
+      setTimeout(() => {
+        this.dialogVisible = true
+      }, 10)
+    },
+    // 拖拽触发
+    eventDropStart(dropInfo) {
+      // 给的参数还是拖拽前的 所以 这个不能用
+      console.log('拖拽了前位置:', dropInfo)
+    },
+    // 拖拽新的位置
+    eventDropEnd(dropInfo) {
+      // 更新一下新的位置
+      let newData = dropInfo.event
+      let find = this.calendarOptions.events.find(e => e.id == newData.id)
+      let dateTime = this.reloadDateTime(newData.start, newData.end)
+
+      find.start = dateTime[0]
+      find.end = dateTime[1]
+
+      // // 新增 or 更新
+      // saveOrUpdate(find).then(res => {
+      //   if (res.code == 200) {
+      //     this.msgSuccess(res.msg)
+      //     this.getList()
+      //   } else {
+      //     this.msgError(res.msg)
+      //   }
+      // })
+
+      // 模拟位置更新
+      let index = this.calendarOptions.events.findIndex(e => e.id == newData.id);
+      let newVal = {
+        id: newData.id,
+        title: newData.title,
+        text: newData.extendedProps.text,
+        backgroundColor: newData.backgroundColor,
+        start: find.start,
+        end: find.end,
+      };
+      this.calendarOptions.events.splice(index, 1, newVal)
+      console.log(this.calendarOptions.events);
+
+    },
+    // 更新事件数据并且保存数据库
+    eventClick(calEvent) {
+      let event = this.calendarOptions.events.find(e => e.id == calEvent.event.id)
+      // 短时间双击2下为删除-弹出
+      this.deleteCount++
+      if (this.deleteCount > 2) return
+      setTimeout(() => {
+        if (this.deleteCount === 1) {
+          // 进行单击事件处理 -- 打开弹出 更新操作
+          this.dialogVisible = true
+          let time = this.reloadDateTime(event.start, event.end)
+          this.updateForm = event
+          // 会议时间
+          this.updateForm.datePicker = time
+        } else if (this.deleteCount === 2) {
+          this.$confirm('是否继续删除【' + event.title + '】事件?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            // 进行双击事件处理 删除操作
+            // deleteById(calEvent.event.id).then(res => {
+            //   if (res.code == 200) {
+            //     this.msgSuccess(res.msg)
+            //     this.getList()
+            //   } else {
+            //     this.msgError(res.msg)
+            //   }
+            // })
+
+
+            // 模拟删除
+            let index = this.calendarOptions.events.findIndex(e => e.id === calEvent.event.id);
+            this.calendarOptions.events.splice(index, 1)
+            console.log("删除完毕:", this.calendarOptions.events);
+
+          }).catch(() => {
+          })
+        }
+        // 改为0
+        this.deleteCount = 0
+      }, 300)
+    },
+    // 提交新增or更新
+    submit() {
+      // this.$refs['updateForm'].validate((valid) => {
+      //   if (valid) {
+      //     // 拿到当前点击的(更改的)
+      //     this.updateForm.start = this.updateForm.datePicker[0]
+      //     this.updateForm.end = this.updateForm.datePicker[1]
+      //     // 新增 or 更新
+      //     saveOrUpdate(this.updateForm).then(res => {
+      //       if (res.code == 200) {
+      //         this.msgSuccess(res.msg)
+      //         this.getList()
+      //       } else {
+      //         this.msgError(res.msg)
+      //       }
+      //     })
+      //     this.dialogVisible = false
+      //   } else {
+      //     console.log('error submit!!')
+      //     return false
+      //   }
+      // })
+
+      // 模拟提交
+      let oldData = {
+        id: this.updateForm.id,
+        title: this.updateForm.title,
+        text: this.updateForm.text,
+        userList: this.updateForm.userList,
+        backgroundColor: this.updateForm.backgroundColor,
+        start: this.datePicker[0],
+        end: this.datePicker[1],
+      };
+
+      let index = this.calendarOptions.events.findIndex(e => e.id === oldData.id);
+      this.calendarOptions.events.splice(index, 1, oldData)
+
+      console.log("提交：", this.calendarOptions.events);
+      this.dialogVisible = false;
+
+    },
+    // 用户将鼠标悬停在事件上时触发,这里数据做了类型判断，不同的类型数据页面悬浮框显示不用的内容
+    handleEventMouseEnter(info) {
+      let eve = this.calendarOptions.events.find(e => e.id == info.event.id)
+      // 会议内容处理
+      let newVar = eve.text  // && eve.text.length > 10 ? eve.text.substr(0, 10) + '...' : eve.text
+      // 时间处理
+      let dateTime = this.reloadDateTime(eve.start, new Date(eve.end) - 1)
+      tippy(info.el, {
+        content: `
+         <div style="width: 430px;z-index:9999;background: #fff !important;line-height: 1.6;border-radius:4px;border:1px solid #ebeef5;padding:12px;color:#606266;line-height:1.4;text-align:justify;font-size:14px;word-break:break-all;overflow: hidden">
+        <div style="white-space:normal;overflow:auto;table-layout:fixed;word-break:break-all;height:auto;display:inline-block;width: 100%;">
+        <span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
+        会议名称：${eve.title}</div>
+        <p style="width: 100%;"><span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
+        会议内容：${newVar}</p>
+        <div style="width: 100%;"><span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
+        会议时间：${dateTime[0]} - ${dateTime[1]}</div>
+      </div>
+        `,
+        allowHTML: true, //是否允许html文本
+        zIndex: 9999
+      })
+    },
+    // 监听分页
+    handleEvents(time) {
+      let start = time.start
+      let end = time.end // 如果是 4到7日 那么拿到最后的是 4-8 相当于 4-7 他会加1
+      // 第一次进来会触发这个 我们保存一下这个时间 防止点击日程也会被触发
+      let dateTime = this.reloadDateTime(start, new Date(end) - 1)
+
+      let startFormat = dateTime[0]
+      let endFormat = dateTime[1]
+
+      if (this.paginationDateTime.length === 0) {
+        this.paginationDateTime[0] = startFormat
+        this.paginationDateTime[1] = endFormat
+      } else {
+        // 如果时间都是记录的原有时间那么 不是点击的 分页
+        if ((startFormat != this.paginationDateTime[0] && endFormat != this.paginationDateTime[1])) {
+          // 开始调用后台 传递下个月或上个月的时间
+          console.log('切换完毕:', startFormat, endFormat)
+          this.paginationDateTime[0] = startFormat
+          this.paginationDateTime[1] = endFormat
+        } else {
+          // console.log('触发了其他的，导致分页', startFormat, endFormat)
+        }
+      }
+    },
+    handleClose(done) {
+      done()
+    },
+    reset() {
+      // this.$refs['updateForm'].resetFields()
+      this.updateForm = {
+        id: null,
+        // 标题
+        title: '',
+        // 紧急颜色标记
+        backgroundColor: '',
+        // 会议内容
+        text: '',
+        // 参加会议人员
+        userList: '',
+        // 会议室
+        meetingRoom: '',
+        // 时间
+        datePicker: [],
+        start: '',
+        end: ''
+      }
+    },
+    // 时间优化
+    reloadDateTime(s, e) {
+      // 时间处理
+      let start = moment(s).format('YYYY-MM-DD HH:mm:ss')
+      let end = moment(e).format('YYYY-MM-DD HH:mm:ss')
+
+      // // 判断是否为时间精度
+      if (s.length <= 10) {
+        // 不精确到时分秒
+        start = moment(s).format('YYYY-MM-DD HH:mm:ss').replace(' 00:00:00', '')
+        end = moment(e).format('YYYY-MM-DD HH:mm:ss').replace(' 00:00:00', '')
+      } else {
+        // 有时分秒
+        start = moment(s).format('YYYY-MM-DD HH:mm:ss')
+        end = moment(e).format('YYYY-MM-DD HH:mm:ss')
+      }
+      return [start, end]
+    },
     // 获取与毫秒数的转化比例（相差天数：1，相差小时数：2，相差分钟数：3，相差秒数：4）
     getDifferScale(value) {
       let format
@@ -201,195 +445,50 @@ export default {
       // // 2)计算两个日期相差的毫秒数
       let msecNum = endDate.getTime() - startDate.getTime()
       // // 3)计算两个日期相差的天数
-      return Math.floor(msecNum / this.getDifferScale(diff));
-    },
-    // 选中白色区域的时候 (新增)
-    handleDateSelect(time) {
-      // let json = {}
-      // 判断是否为时间精度
-      let date = this.reloadDateTime(time.start, new Date(time.end) - 1);
-      this.count = this.count + 1
-      //添加日历
-      let json = {
-        id: this.count,
-        title: "张三" + ' - ' + "夜班" + this.count,
-        text: "张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三张三",
-        backgroundColor: "#3a87ad",
-        start: date[0],
-        end: date[1]
-      };
-
-      //第二种：通过vue的双向绑定
-      this.calendarOptions.events.push(json);
-    },
-    // 拖拽后的
-    eventDropStart(dropInfo) {
-      console.log("拖拽了前位置:", dropInfo);
-    },
-    // 拖拽新的位置
-    eventDropEnd(dropInfo) {
-      let newData = dropInfo.event;
-      let strings = this.reloadDateTime(dropInfo.event.startStr, new Date(dropInfo.event.endStr) - 1);
-      let index = this.calendarOptions.events.findIndex(e => e.id == newData.id);
-      // 更新一下新的位置
-      let newVal = {
-        id: newData.id,
-        title: newData.title,
-        text: newData.extendedProps.text,
-        backgroundColor: newData.backgroundColor,
-        start: strings[0],
-        end: strings[1],
-      };
-      this.calendarOptions.events.splice(index, 1, newVal)
-      console.log(this.calendarOptions.events);
-    },
-    // 更新事件数据并且保存数据库
-    eventClick(calEvent) {
-      let event = calEvent.event;
-      // 短时间双击2下为删除-弹出
-      this.deleteCount++;
-      if (this.deleteCount > 2) return;
-      setTimeout(() => {
-        if (this.deleteCount === 1) {
-          // 进行单击事件处理 -- 打开弹出 更新操作
-          console.log("单击事件", calEvent);
-          this.dialogVisible = true
-          // 组装一下表单数据
-          let time = this.reloadDateTime(event.startStr, new Date(event.endStr) - 1);
-          // 会议时间
-          console.log(time);
-          this.datePicker = time
-          this.updateForm = {
-            id: event.id,
-            title: event.title,
-            text: event.extendedProps.text,
-            backgroundColor: event.backgroundColor,
-            borderColor: event.backgroundColor,
-            userList: event.extendedProps.userList,
-            start: time[0],
-            end: time[1],
-          }
-        } else if (this.deleteCount === 2) {
-          this.$confirm('是否继续删除【' + event.title + '】事件?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            // 进行双击事件处理 删除操作
-            let getEvents = this.calendarOptions.events;
-            if (getEvents && getEvents.length > 0) {
-              getEvents.map(item => {
-                if (item.id == calEvent.event.id) {
-                  let index = this.calendarOptions.events.findIndex(e => e.id === item.id);
-                  this.calendarOptions.events.splice(index, 1)
-                }
-              })
-              console.log("删除完毕:", this.calendarOptions.events);
-            }
-          }).catch(() => {
-          });
-        }
-        // 改为0
-        this.deleteCount = 0;
-      }, 300);
-    },
-    // 提交修改
-    submit() {
-      this.$refs["updateForm"].validate((valid) => {
-        if (valid) {
-          // 拿到当前点击的(更改的)
-          let oldData = {
-            id: this.updateForm.id,
-            title: this.updateForm.title,
-            text: this.updateForm.text,
-            userList: this.updateForm.userList,
-            backgroundColor: this.updateForm.backgroundColor,
-            start: this.datePicker[0],
-            end: this.datePicker[1],
-          };
-          let index = this.calendarOptions.events.findIndex(e => e.id === oldData.id);
-          this.calendarOptions.events.splice(index, 1, oldData)
-          console.log("提交：", this.calendarOptions.events);
-          this.dialogVisible = false;
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
-
-    },
-    // 用户将鼠标悬停在事件上时触发,这里数据做了类型判断，不同的类型数据页面悬浮框显示不用的内容
-    handleEventMouseEnter(info) {
-      let eve = info.event._def.extendedProps
-      // 会议内容处理
-      let newVar = eve.text && eve.text.length > 10 ? eve.text.substr(0, 10) + "..." : eve.text;
-      // 时间处理
-      let dateTime = this.reloadDateTime(info.event.start, new Date(info.event.end) - 1);
-      tippy(info.el, {
-        content: `
-         <div style="width: 400px;z-index:9999;background: #ebeef5 !important;line-height: 1.6;border-radius:4px;border:1px solid #ebeef5;padding:12px;color:#606266;line-height:1.4;text-align:justify;font-size:14px;word-break:break-all;">
-        <div style="white-space:normal;overflow:auto;table-layout:fixed;word-break:break-all;height:auto;display:inline-block;width: 100%;">
-        <span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
-        会议名称：${info.event.title}</div>
-        <p style="width: 100%;"><span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
-        会议内容：${newVar}</p>
-        <div style="width: 100%;"><span style="display:inline-block;width:6px;height:6px;background-color:#318DDE;border-radius:50%;margin:0 5px;vertical-align:center;line-height:6px;"></span>
-        会议时间：${dateTime[0]} - ${dateTime[1]}</div>
-      </div>
-        `,
-        allowHTML: true, //是否允许html文本
-        zIndex: 9999
-      })
-    },
-    // 监听分页
-    handleEvents(time) {
-      let start = time.start;
-      let end = time.end; // 如果是 4到7日 那么拿到最后的是 4-8 相当于 4-7 他会加1
-      // 第一次进来会触发这个 我们保存一下这个时间 防止点击日程也会被触发
-      let dateTime = this.reloadDateTime(start, new Date(end) - 1);
-
-      let startFormat = dateTime[0]
-      let endFormat = dateTime[1]
-
-      if (this.paginationDateTime.length === 0) {
-        this.paginationDateTime[0] = startFormat
-        this.paginationDateTime[1] = endFormat
-      } else {
-        // 如果时间都是记录的原有时间那么 不是点击的 分页
-        if ((startFormat != this.paginationDateTime[0] && endFormat != this.paginationDateTime[1])) {
-          // 开始调用后台 传递下个月或上个月的时间
-          console.log("切换完毕:", startFormat, endFormat);
-        } else {
-          // 2022-06-27 00:00:00 2022-08-07 23:59:59
-
-
-
-          console.log("触发了其他的，导致分页", startFormat, endFormat);
-        }
-      }
-    },
-    handleClose(done) {
-      done();
-    },
-
-    // 时间优化
-    reloadDateTime(s, e) {
-      // 时间处理
-      let start = moment(s).format('YYYY-MM-DD HH:mm:ss');
-      let end = moment(e).format('YYYY-MM-DD HH:mm:ss');
-
-      // // 判断是否为时间精度
-      if (s.length <= 10) {
-        // 不精确到时分秒
-        start = moment(s).format('YYYY-MM-DD HH:mm:ss').replace(" 00:00:00", "");
-        end = moment(e).format('YYYY-MM-DD HH:mm:ss').replace(" 00:00:00", "");
-      } else {
-        // 有时分秒
-        start = moment(s).format('YYYY-MM-DD HH:mm:ss');
-        end = moment(e).format('YYYY-MM-DD HH:mm:ss');
-      }
-      return [start, end];
+      return Math.floor(msecNum / this.getDifferScale(diff))
     }
+  },
+  mounted() {
+    let ths = this
+    this.$nextTick(() => {
+
+      if (this.paginationDateTime.length >= 2) {
+        this.getList()
+      }
+
+      let first = document.querySelectorAll('.fc-prev-button')[0]
+      first.addEventListener('click', function () {
+        ths.getList()
+      })
+
+      let next = document.querySelectorAll('.fc-next-button')[0]
+      next.addEventListener('click', function () {
+        ths.getList()
+      })
+
+      let dayGridMonth = document.querySelectorAll('.fc-dayGridMonth-button')[0]
+      dayGridMonth.addEventListener('click', function () {
+        ths.getList()
+      })
+
+      let timeGridWeek = document.querySelectorAll('.fc-timeGridWeek-button')[0]
+      timeGridWeek.addEventListener('click', function () {
+        ths.getList()
+      })
+
+      let timeGridDay = document.querySelectorAll('.fc-timeGridDay-button')[0]
+      timeGridDay.addEventListener('click', function () {
+        ths.getList()
+      })
+
+      // 监听今天的
+      let querySelectorAll = document.querySelectorAll('.fc-today-button')[0]
+      querySelectorAll.addEventListener('click', function () {
+        if (ths.paginationDateTime.length >= 2) {
+          ths.getList()
+        }
+      })
+    })
   }
 }
 </script>
@@ -509,51 +608,11 @@ export default {
   border: none;
 }
 
-/* 按钮样式结束 */
-/*/deep/ #tippy-body {*/
-/*  background: #ebeef5 !important;width: 300px;line-height: 1.6;*/
-/*}*/
-
-/*/deep/ .tippy-div {*/
-/*  background: #fff !important;*/
-/*  min-width: 250px;*/
-/*  border-radius: 4px;*/
-/*  border: 1px solid #ebeef5;*/
-/*  padding: 12px;*/
-/*  color: #606266;*/
-/*  line-height: 1.4;*/
-/*  text-align: justify;*/
-/*  font-size: 14px;*/
-/*  box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);*/
-/*  word-break: break-all;*/
-/*}*/
-
 /deep/ .fc-timegrid-col-events {
   z-index: 5 !important;
 }
 
-/*.item {*/
-/*  display: inline-block;*/
-/*  width: 6px;*/
-/*  height: 6px;*/
-/*  background-color: #318DDE;*/
-/*  border-radius: 50%;*/
-/*  margin: 0 5px;*/
-/*  vertical-align: center;*/
-/*  line-height: 6px;*/
-/*}*/
-
-/*.item-title {*/
-/*  width: 161px;*/
-/*  white-space: normal;*/
-/*  overflow: auto;*/
-/*  table-layout: fixed;*/
-/*  word-break: break-all;*/
-/*  height: auto;*/
-/*  display: inline-block;*/
-/*}*/
-
-/*.item-line{*/
-/*  width: 100%;*/
-/*}*/
+body {
+  overflow: hidden !important;
+}
 </style>
