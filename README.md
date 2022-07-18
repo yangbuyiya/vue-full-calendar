@@ -8,6 +8,7 @@
 
 
 # 演示
+![](img/7.gif)
 ![](img/img.png)
 ![](img/img_1.png)
 
