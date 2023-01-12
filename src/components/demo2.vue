@@ -493,7 +493,17 @@ export default {
   mounted() {
     let ths = this
     this.$nextTick(() => {
-
+      let dateTime = this.reloadDateTime(new Date(), new Date() - 1)
+      this.calendarOptions.events = [
+        {
+          id: 999,
+          title: "杨不易呀",
+          text: "杨不易呀新网站: www.yby6.com",
+          backgroundColor: 'red',
+          start: dateTime[0].substr(0,10) + " 00:00:00",
+          end: dateTime[1],
+        }
+      ]
       if (this.paginationDateTime.length >= 2) {
         this.getList()
       }
