@@ -111,6 +111,10 @@
         </div>
       </el-dialog>
     </div>
+
+
+    <div class="sj"></div>
+
   </div>
 </template>
 
@@ -122,6 +126,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import zhCnLocale from '@fullcalendar/core/locales/zh-cn'
 // import tippy from 'tippy.js'
 import moment from 'moment'
+import CanvasWay from "../utils/sy";
 // import {deleteById, getListByDateTime, saveOrUpdate} from '@/api/oa/workCalendarItems'
 
 export default {
@@ -493,6 +498,20 @@ export default {
   mounted() {
     let ths = this
     this.$nextTick(() => {
+
+      let a = new CanvasWay( {
+        txt:'www.yby6.com',
+        width: 198,
+        height: 200,
+        x: 50,
+        y: 0,
+        fontSize: 12,
+        color: '#afafaf'
+      })
+
+      const selector = document.querySelector(".sj");
+      selector.style.background = `url(${a.render()})`
+
       let dateTime = this.reloadDateTime(new Date(), new Date() - 1)
       this.calendarOptions.events = [
         {
@@ -667,4 +686,22 @@ export default {
 body {
   overflow: hidden !important;
 }
+
+
+.sj {
+  pointer-events: none;
+  z-index: 999999;
+  animation: 0s ease 0s 1 normal none running undefined !important;
+  inset: 0px !important;
+  container: undefined !important;
+  display: block !important;
+  opacity: 1 !important;
+  overflow: hidden !important;
+  page: undefined !important;
+  position: fixed !important;
+  transition: undefined 0s ease 0s !important;
+  background: transparent;
+  transform: rotate(345deg);
+}
+
 </style>

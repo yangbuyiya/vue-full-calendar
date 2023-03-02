@@ -1,6 +1,7 @@
 # vue-demo
 
-
+# 演示地址
+[点我前往](https://yangbuyiya.github.io/vue-full-calendar/dist/index.html)
 
 # 操作流程
 ### 单机日程事项 -》 新增 or 更新
@@ -8,6 +9,7 @@
 
 
 # 演示
+### 地址 
 ![](img/7.gif)
 ![](img/img.png)
 ![](img/img_1.png)
